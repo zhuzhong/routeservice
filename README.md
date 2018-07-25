@@ -3,7 +3,9 @@
 
 ##  问题
 对于一个业务接口服务它可以有多个实现类。对于使用者来说，需要指定它所使用的是哪一个实现。比如一个接口：
-	
+
+### 接口定义
+
 	interface DemoService{
 		void printStr(String str);
 	}
@@ -24,6 +26,8 @@
 （比如上述的接口对应的一个业务场景发短信，131，132，133走联通的通道发出去； 136，137，139走移动的通道发出去；等等业务情形）
 
 当我们在业务类中使用这个上述接口时，需要明确的指定我们需要使用的是哪一个实现类接口；对于代码多数情形定义如下：
+
+### 业务代码实现
 
 	public class BizClazz implements BizInterface{
 	
@@ -49,7 +53,8 @@
 如果按照这个思路，业务代码中处处都是这样的if else 代码，那么能否解决掉这样的代码呢？答案是肯定的。对于服务实现类的路由，在java中最好的解决办法即为代理+反射。
 
 ## 解决方案
-我们重新定义接口
+
+### 重新定义接口
 
 	package c.z.route;
 	
@@ -71,7 +76,7 @@
 		}
 	}
 	
-	而相应的业务代码变更为：
+### 业务代码重构
 	
 	public class BizClazz implements BizInterface{
 	
@@ -84,7 +89,9 @@
 		}
 	}
 
-jar依赖
+## 使用方式
+
+### jar依赖
 	
 		<dependency>
 			<groupId>c.z</groupId>
@@ -93,20 +100,28 @@ jar依赖
 		</dependency>
 
 	
-spring配置
+### spring配置
 
 	<bean class="c.z.route.RouteScannerConfigurer">
 		<property name="annotationClass" value="c.z.route.RouteService" />
 		<property name="basePackage" value="c.z.bizservice" />
 	</bean>
 
+
+### 适用范围
+	
+ 即在定义接口时，每个方法都需要显示的传递路由参数;
+
 ## 技术要点
 
 本jar主要抄写mybatis-spring的思路及大部分代码。即对于任一个满足条件（注解）的接口进行代理，提供给用户使用。而真正的实现，则可以只关注一个方面，从而避免了太多的判断条件。
 
+接口spring注入命名要点:
 
-|业务接口|命名规范|实现者|使用者
+|业务接口|命名规范|实现者|使用者|
 |-------|-------|-----|-----|
 |c.z.route.DemoService|接品全称：c.z.route.DemoService|框架代理实现|业务接口消费者|
 |c.z.route.DemoService|routeCode小写+接口SimpleName:printerDemoService|真实业务提供者实现|框架代理|
 |c.z.route.DemoService|routeCode小写+接口SimpleName:copyerDemoService|真实业务提供者实现|框架代理|
+
+
