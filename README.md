@@ -8,13 +8,13 @@
 		void printStr(String str);
 	}
 	
-	@service("printerService")
+	@Service("printerService")
 	class PrinterServiceImpl implements DemoService{
 		public void printStr(String str){
 			System.out.println("use printer print"+str);
 		}
 	}
-	@service("copyerService")
+	@Service("copyerService")
 	class CopyerServiceImpl implements DemoService{
 		public void printStr(String str){
 			System.out.println("use copyer print"+str);
@@ -27,11 +27,11 @@
 
 	public class BizClazz implements BizInterface{
 	
-		@autowire
+		@Autowired
 		@Qualifier("printerService")
 		private DemoService printerService;
 		
-		@autowire
+		@Autowired
 		@Qualifier("copyerService")
 		private DemoService copyerService;
 		
@@ -58,13 +58,13 @@
 		void printStr(String str,@RouteParam String routeCode/*路由参数增加注解*/);
 	}
 	
-	@service("printerDemoService")/*命名规则为 routeCode+接口的短名 */
+	@Service("printerDemoService")/*命名规则为 routeCode 小写+接口的短名 */
 	class PrinterServiceImpl implements DemoService{
 		public void printStr(String str,String routeCode){
 			System.out.println("use printer print"+str);
 		}
 	}
-	@service("copyerDemoService")
+	@Service("copyerDemoService")
 	class CopyerServiceImpl implements DemoService{
 		public void printStr(String str ,String routeCode){
 			System.out.println("use copyer print"+str);
@@ -75,7 +75,7 @@
 	
 	public class BizClazz implements BizInterface{
 	
-		@autowire
+		@Autowired
 		@Qualifier("c.z.route.DemoService")/*接口代理实现的命名规则默认为：接口的全称*/  
 		private DemoService demoService;
 		
@@ -83,3 +83,30 @@
 				demoService.printStr(str,routeCode);		
 		}
 	}
+
+jar依赖
+	
+		<dependency>
+			<groupId>c.z</groupId>
+			<artifactId>routeservice</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+	
+spring配置
+
+	<bean class="c.z.route.RouteScannerConfigurer">
+		<property name="annotationClass" value="c.z.route.RouteService" />
+		<property name="basePackage" value="c.z.bizservice" />
+	</bean>
+
+## 技术要点
+
+本jar主要抄写mybatis-spring的思路及大部分代码。即对于任一个满足条件（注解）的接口进行代理，提供给用户使用。而真正的实现，则可以只关注一个方面，从而避免了太多的判断条件。
+
+
+|业务接口|命名规范|实现者|使用者
+|-------|-------|-----|-----|
+|c.z.route.DemoService|接品全称：c.z.route.DemoService|框架代理实现|业务接口消费者|
+|c.z.route.DemoService|routeCode小写+接口SimpleName:printerDemoService|真实业务提供者实现|框架代理|
+|c.z.route.DemoService|routeCode小写+接口SimpleName:copyerDemoService|真实业务提供者实现|框架代理|
